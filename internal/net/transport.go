@@ -21,6 +21,7 @@ const ProtocolID = "/echo-go/chat/1.0.0"
 type Transport struct {
 	manager *core.Manager
 	host    host.Host
+	streams map[peer.ID]network.Stream
 }
 
 func NewTransport(manager *core.Manager) *Transport {
