@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
 	"echo-go/internal/core"
+	"echo-go/internal/ui/tui"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
@@ -15,16 +15,22 @@ func main() {
 
 	manager := core.NewManager(config)
 
-	// listen for events (runs in background)
+	model := tui.NewModel(manager)
+	program := tea.NewProgram(model)
+
+	// bridge: core → bubbletea
 	go func() {
 		for event := range manager.Events() {
-			fmt.Println(event.Type, event.Payload)
+			program.Send(event)
 		}
 	}()
 
-	// test actions
-	manager.Send("Hello, World!")
+	// test message
+	go func() {
+		manager.Send("hello from echo-go")
+	}()
 
-	// prevent program from exiting
-	time.Sleep(1 * time.Second)
+	if _, err := program.Run(); err != nil {
+		panic(err)
+	}
 }
