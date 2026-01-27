@@ -64,6 +64,7 @@ func (t *Transport) Connect(addr string) error {
 	if err := t.host.Connect(context.Background(), *info); err != nil {
 		return err
 	}
+	fmt.Println("Dialing:", addr)
 
 	fmt.Println("Connected to:", info.ID)
 	return nil

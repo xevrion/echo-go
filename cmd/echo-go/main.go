@@ -4,6 +4,7 @@ import (
 	"echo-go/internal/core"
 	"echo-go/internal/net"
 	"echo-go/internal/ui/tui"
+	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -18,6 +19,10 @@ func main() {
 	transport := net.NewTransport(manager)
 	defer transport.Stop() // ensure transport stops on exit
 	transport.Start()
+
+	if len(os.Args) > 1 {
+		transport.Connect(os.Args[1])
+	}
 
 	model := tui.NewModel(manager)
 	program := tea.NewProgram(model)
