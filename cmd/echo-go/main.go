@@ -12,7 +12,7 @@ import (
 func main() {
 	config := core.Config{
 		Username: "xevrion",
-		Port:     8080,
+		Port:     8081,
 	}
 
 	manager := core.NewManager(config)
