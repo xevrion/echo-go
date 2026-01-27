@@ -27,6 +27,7 @@ type Transport struct {
 func NewTransport(manager *core.Manager) *Transport {
 	return &Transport{
 		manager: manager,
+		streams: make(map[peer.ID]network.Stream),
 	}
 }
 
