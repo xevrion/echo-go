@@ -3,6 +3,7 @@ package net
 import (
 	"echo-go/internal/core"
 
+	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 )
 
@@ -18,6 +19,7 @@ func NewTransport(manager *core.Manager) *Transport {
 }
 
 func (t *Transport) Start() error {
+	libp2p.New("/ip4/0.0.0.0/tcp/port")
 	return nil
 }
 

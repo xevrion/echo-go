@@ -60,3 +60,7 @@ func (manager *Manager) RemovePeer(peerID string) {
 		}
 	}
 }
+
+func (manager *Manager) Port() int {
+	return manager.config.Port
+}
