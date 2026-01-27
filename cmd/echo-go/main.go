@@ -2,6 +2,7 @@ package main
 
 import (
 	"echo-go/internal/core"
+	"echo-go/internal/net"
 	"echo-go/internal/ui/tui"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,6 +15,9 @@ func main() {
 	}
 
 	manager := core.NewManager(config)
+	transport := net.NewTransport(manager)
+	defer transport.Stop() // ensure transport stops on exit
+	transport.Start()
 
 	model := tui.NewModel(manager)
 	program := tea.NewProgram(model)
