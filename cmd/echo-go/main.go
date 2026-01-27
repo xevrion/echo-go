@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"echo-go/internal/core"
 )
@@ -25,5 +26,5 @@ func main() {
 	manager.Send("Hello, World!")
 
 	// prevent program from exiting
-	select {}
+	time.Sleep(1 * time.Second)
 }
