@@ -1,17 +1,22 @@
 package net
 
 import (
+	"bufio"
 	"echo-go/internal/core"
 	"fmt"
+	"time"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/network"
 
 	"context"
 
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
+
+const ProtocolID = "/echo-go/chat/1.0.0"
 
 type Transport struct {
 	manager *core.Manager
@@ -37,6 +42,8 @@ func (t *Transport) Start() error {
 	}
 
 	t.host = h
+
+	t.host.SetStreamHandler(ProtocolID, t.handleStream)
 
 	fmt.Println("Peer ID:", h.ID())
 	for _, addr := range h.Addrs() {
@@ -68,4 +75,22 @@ func (t *Transport) Connect(addr string) error {
 
 	fmt.Println("Connected to:", info.ID)
 	return nil
+}
+
+func (t *Transport) handleStream(s network.Stream) {
+	defer s.Close()
+
+	scanner := bufio.NewScanner(s)
+
+	for scanner.Scan() {
+		text := scanner.Text()
+
+		msg := core.Message{
+			Sender: s.Conn().RemotePeer().String(),
+			Text:   text,
+			Time:   time.Now(),
+		}
+
+		t.manager.Receive(msg)
+	}
 }
