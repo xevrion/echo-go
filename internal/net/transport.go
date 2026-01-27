@@ -6,6 +6,11 @@ import (
 
 	libp2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
+
+	"context"
+
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/multiformats/go-multiaddr"
 )
 
 type Transport struct {
@@ -42,5 +47,24 @@ func (t *Transport) Start() error {
 }
 
 func (t *Transport) Stop() error {
+	return nil
+}
+
+func (t *Transport) Connect(addr string) error {
+	maddr, err := multiaddr.NewMultiaddr(addr)
+	if err != nil {
+		return err
+	}
+
+	info, err := peer.AddrInfoFromP2pAddr(maddr)
+	if err != nil {
+		return err
+	}
+
+	if err := t.host.Connect(context.Background(), *info); err != nil {
+		return err
+	}
+
+	fmt.Println("Connected to:", info.ID)
 	return nil
 }
