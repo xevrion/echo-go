@@ -105,6 +105,8 @@ func (t *Transport) handleStream(s network.Stream) {
 
 func (t *Transport) Send(text string) {
 	for _, stream := range t.streams {
-		fmt.Fprintln(stream, text)
+		w := bufio.NewWriter(stream)
+		w.WriteString(text + "\n")
+		w.Flush()
 	}
 }
