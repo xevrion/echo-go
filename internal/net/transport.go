@@ -47,23 +47,6 @@ func (t *Transport) Start() error {
 
 	t.host.SetStreamHandler(ProtocolID, t.handleStream)
 
-	go func() {
-		for event := range t.manager.Events() {
-			if event.Type != "message" {
-				continue
-			}
-
-			msg, ok := event.Payload.(core.Message)
-			if !ok {
-				continue
-			}
-
-			for _, stream := range t.streams {
-				fmt.Fprintln(stream, msg.Text)
-			}
-		}
-	}()
-
 	fmt.Println("Peer ID:", h.ID())
 	for _, addr := range h.Addrs() {
 		fmt.Println("Listening on:", addr)
@@ -116,5 +99,11 @@ func (t *Transport) handleStream(s network.Stream) {
 		}
 
 		t.manager.Receive(msg)
+	}
+}
+
+func (t *Transport) Send(text string) {
+	for _, stream := range t.streams {
+		fmt.Fprintln(stream, text)
 	}
 }

@@ -24,7 +24,7 @@ func main() {
 		transport.Connect(os.Args[1])
 	}
 
-	model := tui.NewModel(manager)
+	model := tui.NewModel(manager, transport)
 	program := tea.NewProgram(model)
 
 	// bridge: core → bubbletea

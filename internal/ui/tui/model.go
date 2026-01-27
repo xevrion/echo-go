@@ -2,22 +2,25 @@ package tui
 
 import (
 	"echo-go/internal/core"
+	"echo-go/internal/net"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	manager  *core.Manager
-	messages []core.Message
-	ready    bool
-	input    string
+	manager   *core.Manager
+	messages  []core.Message
+	ready     bool
+	input     string
+	transport *net.Transport
 }
 
-func NewModel(manager *core.Manager) *Model {
+func NewModel(manager *core.Manager, transport *net.Transport) *Model {
 	return &Model{
-		manager:  manager,
-		messages: []core.Message{},
-		ready:    false,
+		manager:   manager,
+		messages:  []core.Message{},
+		ready:     false,
+		transport: transport,
 	}
 }
 
@@ -44,6 +47,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			if m.input != "" {
 				m.manager.Send(m.input)
+				m.transport.Send(m.input)
 				m.input = ""
 			}
 
