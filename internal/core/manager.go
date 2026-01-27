@@ -41,3 +41,22 @@ func (manager *Manager) Receive(msg Message) {
 		Payload: msg,
 	}
 }
+
+func (manager *Manager) AddPeer(peer Peer) {
+	manager.peers[peer.ID] = peer
+	manager.events <- Event{
+		Type:    "peer_join",
+		Payload: peer,
+	}
+}
+
+func (manager *Manager) RemovePeer(peerID string) {
+	peer, exists := manager.peers[peerID]
+	if exists {
+		delete(manager.peers, peerID)
+		manager.events <- Event{
+			Type:    "peer_leave",
+			Payload: peer,
+		}
+	}
+}
