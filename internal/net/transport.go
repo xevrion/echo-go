@@ -2,8 +2,9 @@ package net
 
 import (
 	"echo-go/internal/core"
+	"fmt"
 
-	"github.com/libp2p/go-libp2p"
+	libp2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 )
 
@@ -19,7 +20,24 @@ func NewTransport(manager *core.Manager) *Transport {
 }
 
 func (t *Transport) Start() error {
-	libp2p.New("/ip4/0.0.0.0/tcp/port")
+	port := t.manager.Port()
+
+	h, err := libp2p.New(
+		libp2p.ListenAddrStrings(
+			fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port),
+		),
+	)
+	if err != nil {
+		return err
+	}
+
+	t.host = h
+
+	fmt.Println("Peer ID:", h.ID())
+	for _, addr := range h.Addrs() {
+		fmt.Println("Listening on:", addr)
+	}
+
 	return nil
 }
 
