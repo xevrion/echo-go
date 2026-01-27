@@ -85,7 +85,8 @@ func (t *Transport) Connect(addr string) error {
 }
 
 func (t *Transport) handleStream(s network.Stream) {
-	defer s.Close()
+	peerID := s.Conn().RemotePeer()
+	t.streams[peerID] = s
 
 	scanner := bufio.NewScanner(s)
 
