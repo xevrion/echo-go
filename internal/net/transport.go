@@ -13,6 +13,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -45,6 +46,13 @@ func (t *Transport) Start() error {
 	}
 
 	t.host = h
+	notifee := &discoveryNotifee{transport: t}
+
+	service := mdns.NewMdnsService(h, "echo-go-mdns", notifee)
+	if err := service.Start(); err != nil {
+		return err
+	}
+
 	t.host.SetStreamHandler(ProtocolID, t.handleStream)
 
 	fmt.Println("Peer ID:", h.ID())
@@ -157,4 +165,16 @@ func (t *Transport) Send(text string) {
 			stream.Close()
 		}
 	}
+}
+
+type discoveryNotifee struct {
+	transport *Transport
+}
+
+func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
+	addr := pi.Addrs[0].Encapsulate(
+		multiaddr.StringCast(fmt.Sprintf("/p2p/%s", pi.ID)),
+	)
+
+	n.transport.Connect(addr.String())
 }
