@@ -14,6 +14,7 @@ type Model struct {
 	input     string
 	transport *net.Transport
 	peers     []core.Peer
+	cursor    int
 }
 
 func NewModel(manager *core.Manager, transport *net.Transport) *Model {
@@ -50,14 +51,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyEnter:
 			if m.input != "" {
-				m.manager.Send(m.input)
+				// normal message send
 				m.transport.Send(m.input)
 				m.input = ""
+			} else if len(m.peers) > 0 {
+				// connect to selected peer
+				selected := m.peers[m.cursor]
+				m.transport.Connect(selected.ID)
 			}
 
 		case tea.KeyBackspace:
 			if len(m.input) > 0 {
 				m.input = m.input[:len(m.input)-1]
+			}
+
+		case tea.KeyUp:
+			if m.cursor > 0 {
+				m.cursor--
+			}
+
+		case tea.KeyDown:
+			if m.cursor < len(m.peers)-1 {
+				m.cursor++
 			}
 
 		default:
@@ -68,7 +83,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() string {
-	s := ""
+	s := "Online:\n"
+	for i, p := range m.peers {
+		prefix := "  "
+		if i == m.cursor {
+			prefix = "> "
+		}
+		s += prefix + p.Name + "\n"
+	}
+
+	s += "\n"
 	for _, msg := range m.messages {
 		s += msg.Sender + ": " + msg.Text + "\n"
 	}
