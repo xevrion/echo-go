@@ -4,15 +4,21 @@ import (
 	"echo-go/internal/core"
 	"echo-go/internal/net"
 	"echo-go/internal/ui/tui"
+	"fmt"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
+	port := 8081
+	if p := os.Getenv("PORT"); p != "" {
+		fmt.Sscanf(p, "%d", &port)
+	}
+
 	config := core.Config{
 		Username: "xevrion",
-		Port:     8081,
+		Port:     port,
 	}
 
 	manager := core.NewManager(config)
