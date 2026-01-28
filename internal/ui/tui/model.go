@@ -13,6 +13,7 @@ type Model struct {
 	ready     bool
 	input     string
 	transport *net.Transport
+	peers     []core.Peer
 }
 
 func NewModel(manager *core.Manager, transport *net.Transport) *Model {
@@ -36,6 +37,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if message, ok := msg.Payload.(core.Message); ok {
 				m.messages = append(m.messages, message)
 			}
+		}
+		if msg.Type == core.EventPeerFound {
+			m.peers = append(m.peers, msg.Payload.(core.Peer))
 		}
 
 	case tea.KeyMsg:

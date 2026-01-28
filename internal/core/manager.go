@@ -68,3 +68,12 @@ func (manager *Manager) Port() int {
 func (m *Manager) Username() string {
 	return m.config.Username
 }
+
+func (m *Manager) AddDiscoveredPeer(peer Peer) {
+	m.peers[peer.ID] = peer
+
+	m.events <- Event{
+		Type:    EventPeerFound,
+		Payload: peer,
+	}
+}

@@ -176,5 +176,10 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 		multiaddr.StringCast(fmt.Sprintf("/p2p/%s", pi.ID)),
 	)
 
+	n.transport.manager.AddDiscoveredPeer(core.Peer{
+		ID:   pi.ID.String(),
+		Name: pi.ID.String(), // temporary name for now
+	})
+
 	n.transport.Connect(addr.String())
 }
