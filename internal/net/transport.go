@@ -2,16 +2,15 @@ package net
 
 import (
 	"bufio"
+	"context"
 	"echo-go/internal/core"
 	"fmt"
+	"sync"
 	"time"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
-
-	"context"
-
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -22,6 +21,7 @@ type Transport struct {
 	manager *core.Manager
 	host    host.Host
 	streams map[peer.ID]network.Stream
+	mu      sync.Mutex
 }
 
 func NewTransport(manager *core.Manager) *Transport {
@@ -44,7 +44,6 @@ func (t *Transport) Start() error {
 	}
 
 	t.host = h
-
 	t.host.SetStreamHandler(ProtocolID, t.handleStream)
 
 	fmt.Println("Peer ID:", h.ID())
@@ -73,21 +72,49 @@ func (t *Transport) Connect(addr string) error {
 	if err := t.host.Connect(context.Background(), *info); err != nil {
 		return err
 	}
-	// fmt.Println("Dialing:", addr)
 
 	fmt.Println("Connected to:", info.ID)
+
+	t.mu.Lock()
+	_, exists := t.streams[info.ID]
+	t.mu.Unlock()
+
+	if exists {
+		return nil
+	}
+
 	stream, err := t.host.NewStream(context.Background(), info.ID, ProtocolID)
 	if err != nil {
 		return err
 	}
+
+	t.mu.Lock()
 	t.streams[info.ID] = stream
+	t.mu.Unlock()
+
+	go t.readStream(stream)
+
 	return nil
 }
 
 func (t *Transport) handleStream(s network.Stream) {
 	peerID := s.Conn().RemotePeer()
-	t.streams[peerID] = s
 
+	t.mu.Lock()
+	_, exists := t.streams[peerID]
+	if exists {
+		t.mu.Unlock()
+		s.Close()
+		return
+	}
+	t.streams[peerID] = s
+	t.mu.Unlock()
+
+	t.readStream(s)
+}
+
+func (t *Transport) readStream(s network.Stream) {
+	peerID := s.Conn().RemotePeer()
 	scanner := bufio.NewScanner(s)
 
 	for scanner.Scan() {
@@ -101,10 +128,23 @@ func (t *Transport) handleStream(s network.Stream) {
 
 		t.manager.Receive(msg)
 	}
+
+	t.mu.Lock()
+	delete(t.streams, peerID)
+	t.mu.Unlock()
+
+	s.Close()
 }
 
 func (t *Transport) Send(text string) {
-	for _, stream := range t.streams {
-		fmt.Fprintf(stream, "%s\n", text)
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	for peerID, stream := range t.streams {
+		_, err := fmt.Fprintf(stream, "%s\n", text)
+		if err != nil {
+			delete(t.streams, peerID)
+			stream.Close()
+		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"echo-go/internal/ui/tui"
 	"fmt"
 	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -23,26 +24,21 @@ func main() {
 
 	manager := core.NewManager(config)
 	transport := net.NewTransport(manager)
-	defer transport.Stop() // ensure transport stops on exit
+	defer transport.Stop()
 	transport.Start()
 
 	if len(os.Args) > 1 {
+		time.Sleep(100 * time.Millisecond)
 		transport.Connect(os.Args[1])
 	}
 
 	model := tui.NewModel(manager, transport)
 	program := tea.NewProgram(model)
 
-	// bridge: core → bubbletea
 	go func() {
 		for event := range manager.Events() {
 			program.Send(event)
 		}
-	}()
-
-	// test message
-	go func() {
-		manager.Send("hello from echo-go")
 	}()
 
 	if _, err := program.Run(); err != nil {
