@@ -64,3 +64,7 @@ func (manager *Manager) RemovePeer(peerID string) {
 func (manager *Manager) Port() int {
 	return manager.config.Port
 }
+
+func (m *Manager) Username() string {
+	return m.config.Username
+}

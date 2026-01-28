@@ -5,6 +5,7 @@ import (
 	"context"
 	"echo-go/internal/core"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -118,11 +119,20 @@ func (t *Transport) readStream(s network.Stream) {
 	scanner := bufio.NewScanner(s)
 
 	for scanner.Scan() {
-		text := scanner.Text()
+		raw := scanner.Text()
+
+		parts := strings.SplitN(raw, "|", 2)
+		sender := peerID.String()
+		msgText := raw
+
+		if len(parts) == 2 {
+			sender = parts[0]
+			msgText = parts[1]
+		}
 
 		msg := core.Message{
-			Sender: peerID.String(),
-			Text:   text,
+			Sender: sender,
+			Text:   msgText,
 			Time:   time.Now(),
 		}
 
@@ -141,7 +151,7 @@ func (t *Transport) Send(text string) {
 	defer t.mu.Unlock()
 
 	for peerID, stream := range t.streams {
-		_, err := fmt.Fprintf(stream, "%s\n", text)
+		_, err := fmt.Fprintf(stream, "%s|%s\n", t.manager.Username(), text)
 		if err != nil {
 			delete(t.streams, peerID)
 			stream.Close()

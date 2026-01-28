@@ -17,8 +17,13 @@ func main() {
 		fmt.Sscanf(p, "%d", &port)
 	}
 
+	name := os.Getenv("NAME")
+	if name == "" {
+		name = "user"
+	}
+
 	config := core.Config{
-		Username: "xevrion",
+		Username: name,
 		Port:     port,
 	}
 
