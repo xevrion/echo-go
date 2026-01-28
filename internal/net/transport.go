@@ -94,7 +94,7 @@ func (t *Transport) handleStream(s network.Stream) {
 		text := scanner.Text()
 
 		msg := core.Message{
-			Sender: s.Conn().RemotePeer().String(),
+			Sender: peerID.String(),
 			Text:   text,
 			Time:   time.Now(),
 		}
@@ -105,8 +105,6 @@ func (t *Transport) handleStream(s network.Stream) {
 
 func (t *Transport) Send(text string) {
 	for _, stream := range t.streams {
-		w := bufio.NewWriter(stream)
-		w.WriteString(text + "\n")
-		w.Flush()
+		fmt.Fprintf(stream, "%s\n", text)
 	}
 }
