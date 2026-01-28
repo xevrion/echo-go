@@ -8,13 +8,14 @@ import (
 )
 
 type Model struct {
-	manager   *core.Manager
-	messages  []core.Message
-	ready     bool
-	input     string
-	transport *net.Transport
-	peers     []core.Peer
-	cursor    int
+	manager    *core.Manager
+	messages   []core.Message
+	ready      bool
+	input      string
+	transport  *net.Transport
+	peers      []core.Peer
+	cursor     int
+	activePeer string
 }
 
 func NewModel(manager *core.Manager, transport *net.Transport) *Model {
@@ -51,13 +52,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyEnter:
 			if m.input != "" {
-				// normal message send
-				m.transport.Send(m.input)
+				if m.activePeer != "" {
+					m.manager.Send(m.input)
+					m.transport.SendTo(m.activePeer, m.input)
+				}
 				m.input = ""
 			} else if len(m.peers) > 0 {
 				// connect to selected peer
 				selected := m.peers[m.cursor]
 				m.transport.Connect(selected.ID)
+				m.activePeer = selected.ID
+
 			}
 
 		case tea.KeyBackspace:

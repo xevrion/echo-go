@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	port := 8082
+	port := 8081
 	if p := os.Getenv("PORT"); p != "" {
 		fmt.Sscanf(p, "%d", &port)
 	}

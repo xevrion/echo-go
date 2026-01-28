@@ -183,3 +183,15 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 
 	n.transport.Connect(addr.String())
 }
+
+func (t *Transport) SendTo(peerID, text string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	stream, ok := t.streams[peer.ID(peerID)]
+	if !ok {
+		return
+	}
+
+	fmt.Fprintf(stream, "%s|%s\n", t.manager.Username(), text)
+}
