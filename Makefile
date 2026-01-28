@@ -1,3 +1,4 @@
+# doesnt work properly..still too much manual typing 
 APP=echo-go
 
 a:

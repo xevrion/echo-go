@@ -1,7 +1,12 @@
 todo
+- [ ] easy connection setup (like a list of users online or just sharing a ip/link) 
 - [x] custom username
 - [x] message feature
 - [x] only one user can send messages at a time, and the other can just see it. implement bi-directional chat (FIXED)
+- [ ] typing indicator
+- [ ] message read indicator
+- [ ] message timestamps
+- [ ] improve code structure by adding more comments for better understanding
 - [ ] basic UI
 - [ ] basic core backend
 - [ ] encoding-decoding
